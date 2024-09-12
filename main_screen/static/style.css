@@ -1,0 +1,149 @@
+@import url('https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap');
+* {
+    font-family: "Mulish", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+  
+body{
+    background: white;
+    margin: 0px;
+}
+.header{
+    display: flex;
+    align-items: stretch;
+    position: sticky;
+    background-color: white;
+    border-bottom: 1px solid;
+    border-color: lightgrey;
+    top: 0;
+    width: auto;
+
+}
+
+.header-text{
+    font-weight: 600;
+    font-size: xx-large;
+    text-decoration: none;
+    color:black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-buttons-div{
+    margin-left: auto;
+    display: flex;
+    align-items: stretch;
+    padding: 20px;
+    
+}
+
+.header-buttons{
+    display: flex;
+    align-items: center;
+    position: relative;
+    background-color: #3f36db;
+    border: none;
+    border-radius: 4px;
+    color:white;
+
+}
+
+#noti-text{
+    font-size:large;
+    margin: 10px;
+}
+
+#noti-count {
+    position:absolute;
+    bottom:-15px;
+    right:-15px;
+    background-color:red;
+    color:#fff;
+    border-radius: 15px;
+    width:30px;
+    height:30px;
+    text-align:center;
+  }
+  #noti-count div {
+    margin-top:7px;
+  }
+
+
+.container{
+    padding: 10px;
+}
+
+.card{
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 10vw;
+    overflow: hidden;
+    padding-bottom: 10px;
+    outline: 1px solid;
+    outline-color: lightgray;
+    
+}
+
+.card-container{
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 50px;
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-top: 20px;
+
+}
+
+.card-contents{
+    outline: none;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.image{
+    aspect-ratio: 4/3;
+    object-fit: cover;
+}
+
+
+.short-description{
+    text-overflow: ellipsis;
+    overflow: hidden; 
+    font-size:larger;
+    height: 50px;
+}
+
+.title{
+    font-size: xx-large;
+    font-weight: bold;
+    margin: 0px;
+}
+
+.card-button{
+    text-decoration: none;
+    border: 1px solid;
+    border-color:black;
+    border-radius: 10px;
+    width: 100%;    
+    font-size: x-large;
+    text-align: center;
+    font-weight: bold;
+    color:black;
+}
+
+.search-bar{
+    width: 100%;
+    font-size: larger;
+    border-radius: 25px;
+    padding-left: 10px;
+    border: 1px solid gray;
+    outline: none;
+}

@@ -1,0 +1,20 @@
+{% extends 'header.html' %}
+
+
+{% block main_block %}
+<form action="." method="post">
+    {{form}}
+</form>
+<div class="card-container">
+    {% for filter in data.filters %}
+        <div class="card">
+            <img src={{filter.image}} class="image">
+            <div class="card-contents">
+                <p class="title">{{filter.title}}</p>
+                <p class="short-description">{{filter.description}}</p>
+                <a href="/filters/{{filter.id}}/" class="card-button">Подробнее</a> 
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

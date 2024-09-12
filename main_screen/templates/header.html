@@ -1,0 +1,26 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="rus">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Магазин</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}"/>
+  </head>
+  <body>
+    <div class="header">
+      <a class="header-text" href=""> {{ data.page_name }}</a>
+      <div class="header-buttons-div">
+          <button class="header-buttons">
+            <div id='noti-text'>Очередь</div>
+            <div id='noti-count'><div>2</div></div>
+          </button>
+      </div>
+    </div>
+    <div class="container">
+      {% block main_block %}{% endblock %}
+    </div>
+  </body>
+</html>
