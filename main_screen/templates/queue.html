@@ -1,0 +1,22 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'all_filters_style.css' %}"/>
+{% endblock %}
+
+{% block main_block %}
+<div class="queue_user_image">
+</div>
+<div class="queue_container">
+    {% for filter in data.filters %}
+        <div class="queue_card">
+            <img src={{filter.image}} class="queue_image">
+            <div class="queue_contents">
+                <p class="queue_title">{{filter.title}}</p>
+                <p class="queue_short_description">{{filter.description}}</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

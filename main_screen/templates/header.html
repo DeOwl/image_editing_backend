@@ -6,21 +6,24 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="#">
     <title>Магазин</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'main_style.css' %}"/>
+    {% block head %}{% endblock %}
   </head>
   <body>
     <div class="header">
-      <a class="header-text" href=""> {{ data.page_name }}</a>
+      <a class="header-text" href="/">Pictura</a>
       <div class="header-buttons-div">
-          <button class="header-buttons">
+          <a class="header-buttons" href="/queue/{{data.queue_id}}" >
             <div id='noti-text'>Очередь</div>
-            <div id='noti-count'><div>2</div></div>
-          </button>
+            <div id='noti-count'><div>{{data.cart_count}}</div></div>
+          </a>
       </div>
     </div>
     <div class="container">
       {% block main_block %}{% endblock %}
     </div>
+    <p>{{ data.message }}</p>
   </body>
 </html>
