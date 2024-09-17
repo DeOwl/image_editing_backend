@@ -20,8 +20,9 @@ body{
     border-bottom: 1px solid;
     border-color: lightgrey;
     top: 0;
-    width: auto;
-    height: 5.5rem;
+    width: auto;    
+    height: 4.5rem;
+    padding: 0 3rem;
 
 }
 
@@ -34,50 +35,10 @@ body{
     justify-content: center;
     align-items: center;
     font-style: italic;
-    padding-left: 20px;
     
 }
 
-.header-buttons-div{
-    margin-left: auto;
-    display: flex;
-    align-items: stretch;
-    padding: 20px;
-    
-}
 
-.header-buttons{
-    display: flex;
-    align-items: center;
-    position: relative;
-    background-color: #3f36db;
-    border: none;
-    border-radius: 4px;
-    color:white;
-    text-decoration: none;
-
-}
-
-#noti-text{
-    font-size:large;
-    margin: 10px;
-    font-style: italic;
-}
-
-#noti-count {
-    position:absolute;
-    bottom:-15px;
-    right:-15px;
-    background-color:red;
-    color:#fff;
-    border-radius: 15px;
-    width:30px;
-    height:30px;
-    text-align:center;
-  }
-  #noti-count div {
-    margin-top:7px;
-  }
 
 
 .container{

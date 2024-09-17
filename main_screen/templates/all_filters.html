@@ -6,9 +6,14 @@
 {% endblock %}
 
 {% block main_block %}
-<form action="." method="GET">
-    <input type="search" name="search" class="search-bar" placeholder="Поиск" />
-</form>
+<div class="search-div">
+    <form action="." method="GET" class="search-bar-cont">
+        <input type="text" name="search" class="search-bar" placeholder="Поиск" value='{{data.search}}'/>
+    </form>
+    <a class="buttons" href="/queue/{{data.queue_id}}" >
+    Очередь: {{data.queue_count}}
+    </a>
+</div>
 <div class="card-container">
     {% for filter in data.filters %}
         <div class="card">

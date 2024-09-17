@@ -2,19 +2,21 @@
 {% load static %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{% static 'all_filters_style.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'queue_style.css' %}"/>
 {% endblock %}
 
 {% block main_block %}
-<div class="queue_user_image">
+<div class="queue-user-image">
+    <p class="image-title">Изображение:</p>
+    <p class="image-name">{{data.image}}</p>
 </div>
-<div class="queue_container">
+<div class="queue-container">
     {% for filter in data.filters %}
         <div class="queue_card">
             <img src={{filter.image}} class="queue_image">
-            <div class="queue_contents">
-                <p class="queue_title">{{filter.title}}</p>
-                <p class="queue_short_description">{{filter.description}}</p>
+            <div class="queue-contents">
+                <p class="queue-title">{{filter.title}}</p>
+                <p class="queue-short-description">{{filter.description}}</p>
             </div>
         </div>
     {% endfor %}

@@ -1,0 +1,73 @@
+
+.queue-user-image{
+    display: flex;
+    flex-direction: row;
+    justify-content:left;
+    vertical-align: middle;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.image-title{
+    padding: 5px;
+    font-size: 20px;
+    margin: 0px;
+    font-style: italic;
+}
+
+.image-name{
+    background-color: lightgray;
+    border-radius: 50px;
+    padding:5px 10px;
+    font-size: 20px;
+    font-style: italic;
+    margin: 0px;
+}
+
+.queue-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    gap: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 20px;
+}
+
+.queue_card{
+    border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+    overflow: hidden;
+    outline: 1px solid;
+    outline-color: lightgray;
+    height: 200px;
+    width:100%;
+}
+
+.queue_image{
+    aspect-ratio: 4/3;
+    object-fit: cover;
+}
+
+.queue-contents{
+    outline: none;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.queue-short-description{
+    font-size:16px;
+    height: 50px;
+    margin-top: 0%; 
+    display: block;
+}
+
+.queue-title{
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    margin-top:0px;
+}
