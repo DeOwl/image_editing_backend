@@ -10,24 +10,15 @@ import requests
 
 
 
-filters = [ {'id' : 0, 'image':'http://localhost:9000/filter-images/0.png', 'title': "RGB Split",       'description' :'Эффект разделения каналов RGB со смещением красного и синего канала в противоположные стороны друг от друга'},
-            {'id' : 1, 'image':'http://localhost:9000/filter-images/1.png', 'title': "Gaussian blur",   'description' :'Эффект размытия изображения с помощью размытия по Гауссу 3x3 сверточной матрицей c расширением границ"'},
-            {'id' : 2, 'image':'http://localhost:9000/filter-images/2.png', 'title': "Sharpen",         'description' :'Эффект увеличения резкости с помощью сверточной матрицы 3x3'},
-            {'id' : 3, 'image':'http://localhost:9000/filter-images/3.png', 'title': "Outline",  'description' :'Эффект выдиления контрастных границ изображения с помощью сверточной матрицы 3x3'},
-            {'id' : 4, 'image':'http://localhost:9000/filter-images/4.png', 'title': "Sobel",  'description' :'Эффект выдиления градиента яркости изображения с помощью оператора Собеля'},
-            {'id' : 5, 'image':'http://localhost:9000/filter-images/5.png', 'title': "Average Grayscale",  'description' :'Эффект черно белого изображения по методу усреднения цветовых каналов изображения'},
-            {'id' : 6, 'image':'http://localhost:9000/filter-images/6.png', 'title': "Luma Grayscale",  'description' :'Эффект черно белого изображения по методу усреднения Luma цветовых каналов с учетом чувствительности глаза к определенным цветовым каналам'}]
-queues = [{'id' : 0, 'image': 'http://localhost:9000/queue-images/0/foliage_face.jpg'},
-          {'id' : 1, 'image': 'http://localhost:9000/queue-images/1/foggy_mountains.jpg'}, 
-          {'id' : 2, 'image': ''}, 
-          {'id' : 3, 'image': ''}]
-queue_filter = [{"queue" : 0, 'filter' : 0}, 
-                {"queue" : 0, 'filter' : 3},
-                {"queue" : 1, 'filter' : 1},
-                {"queue" : 1, 'filter' : 2},
-                {"queue" : 1, 'filter' : 3},
-                {"queue" : 2, 'filter' : 1},
-                {"queue" : 3, 'filter' : 0}]
+filters = [
+            {'id' : 1, 'image':'http://localhost:9000/filter-images/1.png', 'title': "Gaussian blur",   'description' :'Эффект размытия изображения с помощью размытия по Гауссу 3x3 сверточной матрицей c расширением границ"', 'matrix_values' : [1/16, 1/8, 1/16, 1/8, 1/4, 1/8, 1/16, 1/8, 1/16]},
+            {'id' : 2, 'image':'http://localhost:9000/filter-images/2.png', 'title': "Sharpen",         'description' :'Эффект увеличения резкости с помощью сверточной матрицы 3x3', 'matrix_values' : [0, -1, 0, -1, 5, -1, 0, -1, 0]},
+            {'id' : 3, 'image':'http://localhost:9000/filter-images/3.png', 'title': "Outline",  'description' :'Эффект выдиления контрастных границ изображения с помощью сверточной матрицы 3x3', 'matrix_values' : [-1, -1, -1, -1, 8, -1, -1, -1, -1]},
+            {'id' : 4, 'image':'http://localhost:9000/filter-images/4.png', 'title': "Right Sobel",  'description' :'Эффект выдиления градиента яркости изображения с помощью оператора Собеля', 'matrix_values' : [-1, 0, 1, -2, 0, 2, -1, 0, 1]},]
+queues = [{'id' : 0, 'image': 'http://localhost:9000/queue-images/0/foliage_face.jpg', 'filters': [{'id': 0, 'order' : 0}, {'id': 3, 'order' : 1}]},
+          {'id' : 1, 'image': 'http://localhost:9000/queue-images/1/foggy_mountains.jpg', 'filters': [{'id': 1, 'order' : 0}, {'id': 2, 'order' : 2}, {'id': 3, 'order' : 1}]}, 
+          {'id' : 2, 'image': '', 'filters': [{'id': 1, 'order' : 0}]}, 
+          {'id' : 3, 'image': '', 'filters': [{'id': 0, 'order' : 0}]}]
 
 favicon = 'http://localhost:9000/favicon/camera_icon.ico'
 
@@ -35,13 +26,14 @@ favicon = 'http://localhost:9000/favicon/camera_icon.ico'
 queue_id = 1
 
 def count(id):
-    return len(list(filter(lambda x: x['queue'] == id, queue_filter)))
+    return len(list(filter(lambda x: x['id'] == id, queues))[0]['filters'])
 
 
 @csrf_exempt
 def main_page(request):
+    print(filters)
 
-    search = request.GET.get('search', '')
+    search = request.GET.get('filter_title', '')
     temp_f = list(filter(lambda x: search.lower() in x['title'].lower(), filters))
     return render(request, 'all_filters.html', { 'data': {
             'filters' : temp_f,
@@ -64,12 +56,19 @@ def filter_page(request, id=0):
     raise BadRequest('filter not found')
 
 def queue_page(request, id=0):
-    filter_data = list(filter(lambda x: x['id'] in list(map(lambda x: x['filter'], filter( lambda x: x['queue'] == id, queue_filter))), filters))
+    filter_data = list(filter(lambda x: x['id'] in list(map(lambda x: x["id"], list(filter(lambda x: x["id"] == queue_id, queues))[0]["filters"])), filters))
+    for i in filter_data:
+        i['order'] = list(filter(lambda x: x['id'] == i['id'], list(filter(lambda x: x["id"] == queue_id, queues))[0]['filters']))[0]['order']
     
+    filter_data = sorted(filter_data, key= lambda x:x['order'])
+
+
+    # check if queue image exists
     image = list(filter( lambda x: x['id'] == id, queues))[0]["image"]
     response = requests.get(image)
     if (response.status_code != 200):
         image = ""
+
     return render(request, 'queue.html', { 'data': {
         'filters' : filter_data,
         'queue_id' : queue_id,
