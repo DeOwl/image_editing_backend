@@ -8,7 +8,7 @@
 {% block main_block %}
 <div class="search-div">
     <form action="." method="GET" class="search-bar-cont">
-        <input type="text" name="search" class="search-bar" placeholder="Поиск" value='{{data.search}}'/>
+        <input type="text" name="filter_title" class="search-bar" placeholder="Поиск" value='{{data.search}}'/>
     </form>
     <a class="buttons" href="/queue/{{data.queue_id}}" >
     Очередь: {{data.queue_count}}
