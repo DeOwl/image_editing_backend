@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 # Create your models here.
 class AuthGroup(models.Model):
@@ -114,36 +115,38 @@ class DjangoSession(models.Model):
         managed = False
         db_table = 'django_session'
 
+class Filter(models.Model):
 
-class FilterQueue(models.Model):
-    queue = models.OneToOneField('Queues', models.DO_NOTHING, db_column='queue', primary_key=True)  # The composite primary key (queue, filter) found, that is not supported. The first column is selected.
-    filter = models.ForeignKey('Filters', models.DO_NOTHING, db_column='filter')
-
-    class Meta:
-        managed = False
-        db_table = 'filter_queue'
-        unique_together = (('queue', 'filter'),)
-
-
-class Filters(models.Model):
-    name = models.CharField(max_length=50)
+    title = models.CharField(max_length=50)
     description = models.TextField()
     image = models.TextField()
-    status = models.TextField()  # This field type is a guess.
-
+    matrix_values = ArrayField(models.FloatField(), size=9)
+    status = models.TextField(choices=(("good", "good"), ("deleted", "deleted")))  # This field type is a guess.
     class Meta:
         managed = False
-        db_table = 'filters'
+        db_table = 'filter'
 
 
-class Queues(models.Model):
+class Queue(models.Model):
+    status = models.CharField(choices=(("draft", "draft"), ("deleted", "deleted"), ("formed", "formed"), ("finished", "finished"), ("denied", "denied")))
+    image = models.TextField()
     creation_date = models.DateTimeField()
-    formation_date = models.DateTimeField(blank=True, null=True)
-    resolution_date = models.DateTimeField(blank=True, null=True)
+    submition_date = models.DateTimeField(blank=True, null=True)
+    completion_date = models.DateTimeField(blank=True, null=True)
     creator = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='creator')
-    moderator = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='moderator', related_name='queues_moderator_set', blank=True, null=True)
-    status = models.TextField()  # This field type is a guess.
+    moderator = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='moderator', related_name='queue_moderator_set', blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'queues'
+        db_table = 'queue'
+
+
+class QueueFilter(models.Model):
+    queue = models.ForeignKey(Queue, models.DO_NOTHING, db_column='queue')
+    filter = models.ForeignKey(Filter, models.DO_NOTHING, db_column='filter')
+    order = models.IntegerField(unique=True)
+
+    class Meta:
+        managed = False
+        db_table = 'queue_filter'
+        unique_together = (('queue', 'filter', 'order'), )

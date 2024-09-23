@@ -21,7 +21,9 @@ from main_screen import views as m_s
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', m_s.main_page),
+    path('', m_s.main_page, name='main_page'),
     path('filters/<int:id>/', m_s.filter_page),
-    path('queue/<int:id>/', m_s.queue_page)
+    path('queue/', m_s.queue_page),
+    path('queue/add/', m_s.add_filter),
+    path('queue/delete/', m_s.remove_queue)
 ]

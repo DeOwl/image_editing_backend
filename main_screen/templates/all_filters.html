@@ -10,9 +10,15 @@
     <form action="." method="GET" class="search-bar-cont">
         <input type="text" name="filter_title" class="search-bar" placeholder="Поиск" value='{{data.search}}'/>
     </form>
-    <a class="buttons" href="/queue/{{data.queue_id}}" >
+    {% if data.queue_count > 0%}
+    <a class="buttons" href="/queue/" >
     Очередь: {{data.queue_count}}
     </a>
+    {% else%}
+    <a class="buttons" href="/queue/" disabled>
+        Очередь
+    </a>
+    {%endif%}
 </div>
 <div class="card-container">
     {% for filter in data.filters %}
@@ -22,6 +28,9 @@
                 <p class="title">{{filter.title}}</p>
                 <p class="short-description">{{filter.description}}</p>
                 <a href="/filters/{{filter.id}}/" class="card-button">Подробнее</a> 
+                <form action="/queue/add/" method="POST">
+                    <button name="filter_id" value="{{filter.id}}" class="card-button">Добавить в корзину</button>
+                </form>
             </div>
         </div>
     {% endfor %}

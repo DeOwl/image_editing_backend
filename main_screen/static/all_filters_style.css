@@ -63,6 +63,8 @@
     font-weight: bold;
     color:black;
     padding: 5px;
+    background-color:white;
+    margin-top: 10px;
 }
 
 .search-bar{
@@ -99,4 +101,10 @@
     display: flex;
     align-items: center;
     padding-right:30px;
+}
+
+.buttons[disabled] {
+    pointer-events: none;
+    cursor: default;
+    background-color: grey;
 }

@@ -13,13 +13,16 @@
 <div class="queue-container">
     {% for filter in data.filters %}
         <div class="queue_card">
-            <img src={{filter.image}} class="queue_image">
+            <img src={{filter.filter.image}} class="queue_image">
             <div class="queue-contents">
-                <p class="queue-title">{{filter.title}}</p>
-                <p class="queue-short-description">{{filter.description}}</p>
+                <p class="queue-title">{{filter.filter.title}}</p>
+                <p class="queue-short-description">{{filter.filter.description}}</p>
             </div>
             <p style="text-align:right;margin-left:auto;margin-right:10px;">{{filter.order}}</p>
         </div>
     {% endfor %}
 </div>
+<form action="/queue/delete/" method="POST" class="buttons-container">
+    <button name="queue_id" value="{{data.queue_id}}" class="delete-button">Удалить Очередь</button>
+</form>
 {% endblock %}

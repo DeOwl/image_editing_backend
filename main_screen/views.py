@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django import forms
 from datetime import date
 from django.views.decorators.csrf import csrf_exempt
@@ -6,8 +6,9 @@ from django.core.exceptions import BadRequest
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 import requests
-
-
+from .models import Filter, Queue, QueueFilter, AuthUser
+import datetime
+from django.db import connection
 
 
 filters = [
@@ -23,60 +24,87 @@ queues = [{'id' : 0, 'image': 'http://localhost:9000/queue-images/0/foliage_face
 favicon = 'http://localhost:9000/favicon/camera_icon.ico'
 
 
-queue_id = 1
-
-def count(id):
-    return len(list(filter(lambda x: x['id'] == id, queues))[0]['filters'])
+current_user = 1
+    
 
 
 @csrf_exempt
 def main_page(request):
-    print(filters)
+    try:
+        queue_id = Queue.objects.get(creator = current_user, status="draft")
+        c = QueueFilter.objects.filter(queue=queue_id).count()
+    except Exception as ex:
+        c = -1
+        # No queue of type draft
 
     search = request.GET.get('filter_title', '')
-    temp_f = list(filter(lambda x: search.lower() in x['title'].lower(), filters))
+    temp_f = Filter.objects.filter(title__icontains = search, status="good")
     return render(request, 'all_filters.html', { 'data': {
             'filters' : temp_f,
-            'queue_id' : queue_id,
-            'queue_count' : count(queue_id),
+            'queue_count' : c,
             'search' : search,
             'favicon' : favicon
         }})
 
 
 def filter_page(request, id=0):
-    filter_data = list(filter(lambda x: x["id"] == id, filters))
-    if len(filter_data) == 1:
+    try:
+        filter_data = Filter.objects.get(id=id)
         return render(request, 'single_filter.html', { 'data': {
-            'filter' : filter_data[0],
-            'queue_id' : queue_id,
-            'queue_count' : count(queue_id),
+            'filter' : filter_data,
             'favicon' : favicon
         }})
-    raise BadRequest('filter not found')
+    except Exception:
+        raise BadRequest('filter not found')
 
-def queue_page(request, id=0):
-    filter_data = list(filter(lambda x: x['id'] in list(map(lambda x: x["id"], list(filter(lambda x: x["id"] == queue_id, queues))[0]["filters"])), filters))
-    for i in filter_data:
-        i['order'] = list(filter(lambda x: x['id'] == i['id'], list(filter(lambda x: x["id"] == queue_id, queues))[0]['filters']))[0]['order']
+def queue_page(request):
+    try:
+        queue_id = Queue.objects.get(creator = current_user, status="draft").id
+    except Exception as ex:
+        # No draft queue
+        raise BadRequest('No queue exists')
+
+    filter_data = QueueFilter.objects.select_related("filter").filter(queue=queue_id).order_by("order")
     
-    filter_data = sorted(filter_data, key= lambda x:x['order'])
-
-
     # check if queue image exists
-    image = list(filter( lambda x: x['id'] == id, queues))[0]["image"]
-    response = requests.get(image)
-    if (response.status_code != 200):
-        image = ""
+    try:
+        image = Queue.objects.get(id=queue_id).image
+        response = requests.get(image)
+        if (response.status_code != 200):
+            image = ""
+    except Exception:
+        pass
 
     return render(request, 'queue.html', { 'data': {
         'filters' : filter_data,
         'queue_id' : queue_id,
-        'queue_count' : count(queue_id),
         'image' : image.split("/")[-1], 
         'favicon' : favicon
     }})
 
+@csrf_exempt
+def add_filter(request):
+    if request.method == "POST":
+        filter_id = request.POST.get("filter_id", '')
+        try:
+            queue = Queue.objects.get(creator = current_user, status="draft")
+            count = QueueFilter.objects.filter(queue=queue).count()
+        except Exception as ex:
+            count = 0
+            queue = Queue(status="draft", image='', creation_date = datetime.datetime.now(), creator = AuthUser.objects.get(id=current_user))
+            queue.save()
+        QueueFilter.objects.create(queue=queue, filter=Filter.objects.get(id=filter_id), order=count + 1)
 
-
-# Create your views here.
+        return redirect('main_page')
+    else:
+        raise BadRequest('incorrect method')
+    
+@csrf_exempt
+def remove_queue(request):
+    if request.method == "POST":
+        queue_id = request.POST.get("queue_id", '')
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE queue SET status = 'deleted' WHERE id = %s", [queue_id])
+        return redirect('main_page')
+    else:
+        raise BadRequest('incorrect method')

@@ -72,3 +72,22 @@
     margin-bottom: 8px;
     margin-top:0px;
 }
+
+.delete-button{
+    text-decoration: none;
+    border: 1px solid gray;
+    border-radius: 4px;
+    width: 400px;    
+    font-size: 20px;
+    text-align: center;
+    font-weight: bold;
+    color:black;
+    padding: 5px;
+    background-color: white;
+}
+
+.buttons-container{
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
