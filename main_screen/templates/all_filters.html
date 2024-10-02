@@ -11,11 +11,11 @@
         <input type="text" name="filter_title" class="search-bar" placeholder="Поиск" value='{{data.search}}'/>
     </form>
     {% if data.queue_count > 0%}
-    <a class="buttons" href="/queue/" >
+    <a class="buttons" href="/queue/{{data.queue_id}}/" >
     Очередь: {{data.queue_count}}
     </a>
     {% else%}
-    <a class="buttons" href="/queue/" disabled>
+    <a class="buttons"  disabled>
         Очередь
     </a>
     {%endif%}

@@ -3,8 +3,7 @@ from django import forms
 from datetime import date
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import BadRequest
-from django.core.validators import URLValidator
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied
 import requests
 from .models import Filter, Queue, QueueFilter, AuthUser
 import datetime
@@ -33,8 +32,10 @@ def main_page(request):
     try:
         queue_id = Queue.objects.get(creator = current_user, status="draft")
         c = QueueFilter.objects.filter(queue=queue_id).count()
+        queue_id = queue_id.id
     except Exception as ex:
         c = -1
+        queue_id = -1
         # No queue of type draft
 
     search = request.GET.get('filter_title', '')
@@ -43,7 +44,8 @@ def main_page(request):
             'filters' : temp_f,
             'queue_count' : c,
             'search' : search,
-            'favicon' : favicon
+            'favicon' : favicon,
+            'queue_id' : queue_id
         }})
 
 
@@ -57,14 +59,15 @@ def filter_page(request, id=0):
     except Exception:
         raise BadRequest('filter not found')
 
-def queue_page(request):
+def queue_page(request, id=0):
     try:
-        queue_id = Queue.objects.get(creator = current_user, status="draft").id
-    except Exception as ex:
-        # No draft queue
-        raise BadRequest('No queue exists')
+        queue = Queue.objects.get(id=id)
+    except Exception:
+        raise BadRequest('queue not found')
+    if (queue.creator.id != current_user):
+        raise PermissionDenied()
 
-    filter_data = QueueFilter.objects.select_related("filter").filter(queue=queue_id).order_by("order")
+    filter_data = QueueFilter.objects.select_related("filter").filter(queue=queue).order_by("order")
     
     # check if queue image exists
     try:
@@ -73,17 +76,17 @@ def queue_page(request):
         if (response.status_code != 200):
             image = ""
     except Exception:
-        pass
+        image = ''
 
     return render(request, 'queue.html', { 'data': {
         'filters' : filter_data,
-        'queue_id' : queue_id,
+        'queue_id' : queue,
         'image' : image.split("/")[-1], 
         'favicon' : favicon
     }})
 
 @csrf_exempt
-def add_filter(request):
+def add_filter(request, id=0):
     if request.method == "POST":
         filter_id = request.POST.get("filter_id", '')
         try:
@@ -100,7 +103,7 @@ def add_filter(request):
         raise BadRequest('incorrect method')
     
 @csrf_exempt
-def remove_queue(request):
+def remove_queue(request, id=0):
     if request.method == "POST":
         queue_id = request.POST.get("queue_id", '')
         with connection.cursor() as cursor:
