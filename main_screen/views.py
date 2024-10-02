@@ -9,17 +9,6 @@ from .models import Filter, Queue, QueueFilter, AuthUser
 import datetime
 from django.db import connection
 
-
-filters = [
-            {'id' : 1, 'image':'http://localhost:9000/filter-images/1.png', 'title': "Gaussian blur",   'description' :'Эффект размытия изображения с помощью размытия по Гауссу 3x3 сверточной матрицей c расширением границ"', 'matrix_values' : [1/16, 1/8, 1/16, 1/8, 1/4, 1/8, 1/16, 1/8, 1/16]},
-            {'id' : 2, 'image':'http://localhost:9000/filter-images/2.png', 'title': "Sharpen",         'description' :'Эффект увеличения резкости с помощью сверточной матрицы 3x3', 'matrix_values' : [0, -1, 0, -1, 5, -1, 0, -1, 0]},
-            {'id' : 3, 'image':'http://localhost:9000/filter-images/3.png', 'title': "Outline",  'description' :'Эффект выдиления контрастных границ изображения с помощью сверточной матрицы 3x3', 'matrix_values' : [-1, -1, -1, -1, 8, -1, -1, -1, -1]},
-            {'id' : 4, 'image':'http://localhost:9000/filter-images/4.png', 'title': "Right Sobel",  'description' :'Эффект выдиления градиента яркости изображения с помощью оператора Собеля', 'matrix_values' : [-1, 0, 1, -2, 0, 2, -1, 0, 1]},]
-queues = [{'id' : 0, 'image': 'http://localhost:9000/queue-images/0/foliage_face.jpg', 'filters': [{'id': 0, 'order' : 0}, {'id': 3, 'order' : 1}]},
-          {'id' : 1, 'image': 'http://localhost:9000/queue-images/1/foggy_mountains.jpg', 'filters': [{'id': 1, 'order' : 0}, {'id': 2, 'order' : 2}, {'id': 3, 'order' : 1}]}, 
-          {'id' : 2, 'image': '', 'filters': [{'id': 1, 'order' : 0}]}, 
-          {'id' : 3, 'image': '', 'filters': [{'id': 0, 'order' : 0}]}]
-
 favicon = 'http://localhost:9000/favicon/camera_icon.ico'
 
 
