@@ -129,7 +129,7 @@ class Filter(models.Model):
 
 class Queue(models.Model):
     status = models.CharField(choices=(("draft", "draft"), ("deleted", "deleted"), ("formed", "formed"), ("finished", "finished"), ("denied", "denied")))
-    image = models.TextField()
+    image = models.TextField(blank=True, null=True)
     creation_date = models.DateTimeField()
     submition_date = models.DateTimeField(blank=True, null=True)
     completion_date = models.DateTimeField(blank=True, null=True)
@@ -144,9 +144,9 @@ class Queue(models.Model):
 class QueueFilter(models.Model):
     queue = models.ForeignKey(Queue, models.DO_NOTHING, db_column='queue')
     filter = models.ForeignKey(Filter, models.DO_NOTHING, db_column='filter')
-    order = models.IntegerField(unique=True)
+    order = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'queue_filter'
-        unique_together = (('queue', 'filter', 'order'), )
+        unique_together = (('queue', 'order'),)

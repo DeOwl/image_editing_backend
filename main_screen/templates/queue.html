@@ -8,7 +8,9 @@
 {% block main_block %}
 <div class="queue-user-image">
     <p class="image-title">Изображение:</p>
+    {% if data.image != ""%}
     <p class="image-name">{{data.image}}</p>
+    {% endif %}
 </div>
 <div class="queue-container">
     {% for filter in data.filters %}
