@@ -48,7 +48,7 @@ class Queue(models.Model):
 
 
 class QueueFilter(models.Model):
-    queue = models.ForeignKey(Queue, models.DO_NOTHING, db_column='queue')
+    queue = models.ForeignKey(Queue, models.DO_NOTHING, db_column='queue', related_name='queues')
     filter = models.ForeignKey(Filter, models.DO_NOTHING, db_column='filter')
     order = models.IntegerField()
 

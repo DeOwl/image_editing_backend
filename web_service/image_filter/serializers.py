@@ -9,11 +9,19 @@ class FilterSerializer(serializers.ModelSerializer):
         # Поля, которые мы сериализуем
         exclude = ["matrix_values", "status", 'id']
 
+class QueueFilterSerializer(serializers.ModelSerializer):
+    filter = FilterSerializer()
+    class Meta:
+        # Модель, которую мы сериализуем
+        model = QueueFilter
+        # Поля, которые мы сериализуем
+        fields = ['filter', 'order']
+
 class QueueSerializer(serializers.ModelSerializer):
-    filters = FilterSerializer(many=True)   
+    filters = QueueFilterSerializer(source="queues", many=True)   
     class Meta:
         # Модель, которую мы сериализуем
         model = Queue
         # Поля, которые мы сериализуем
-        exclude = ['status']
+        fields = ['id', 'status', 'image', 'filters']
 
