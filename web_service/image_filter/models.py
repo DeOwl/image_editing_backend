@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
+# Create your models here.
 
 class AuthUser(models.Model):
     password = models.CharField(max_length=128)
@@ -17,6 +18,7 @@ class AuthUser(models.Model):
     class Meta:
         managed = False
         db_table = 'auth_user'
+
 
 class Filter(models.Model):
 
@@ -38,6 +40,7 @@ class Queue(models.Model):
     completion_date = models.DateTimeField(blank=True, null=True)
     creator = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='creator')
     moderator = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='moderator', related_name='queue_moderator_set', blank=True, null=True)
+    filters = models.ManyToManyField(Filter, through="QueueFilter")
 
     class Meta:
         managed = False
