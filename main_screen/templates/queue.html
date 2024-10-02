@@ -26,7 +26,7 @@
 </div>
 {% if data.queue_id.status == "draft" %}
 <form action="/queue/delete/" method="POST" class="buttons-container">
-    <button name="queue_id" value="{{data.queue_id}}" class="delete-button">Удалить Очередь</button>
+    <button name="queue_id" value="{{data.queue_id.id}}" class="delete-button">Удалить Очередь</button>
 </form>
 {% endif%}
 {% endblock %}
