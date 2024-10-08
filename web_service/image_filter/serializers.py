@@ -7,7 +7,13 @@ class FilterSerializer(serializers.ModelSerializer):
         # Модель, которую мы сериализуем
         model = Filter
         # Поля, которые мы сериализуем
-        exclude = ["matrix_values", "status", 'id']
+        fields = ['id','title', 'matrix_values' , 'description', 'status', 'image']
+        read_only_fields = ['id']
+
+
+
+
+
 
 class QueueFilterSerializer(serializers.ModelSerializer):
     filter = FilterSerializer()

@@ -21,19 +21,28 @@ class AuthUser(models.Model):
 
 
 class Filter(models.Model):
+    class FilterStatus(models.TextChoices):
+        GOOD = "good"
+        DELETED = "deleted"
 
     title = models.CharField(max_length=50)
     description = models.TextField()
-    image = models.TextField()
+    image = models.TextField(default="", blank=True)
     matrix_values = ArrayField(models.FloatField(), size=9)
-    status = models.TextField(choices=(("good", "good"), ("deleted", "deleted")))  # This field type is a guess.
+    status = models.TextField(choices=FilterStatus.choices, default=FilterStatus.GOOD)  # This field type is a guess.
     class Meta:
         managed = False
         db_table = 'filter'
 
 
 class Queue(models.Model):
-    status = models.CharField(choices=(("draft", "draft"), ("deleted", "deleted"), ("formed", "formed"), ("finished", "finished"), ("denied", "denied")))
+    class QueueStatus(models.TextChoices):
+        DRAFT = "draft"
+        DELETED = "deleted"
+        FORMED = "formed"
+        COMPLETED = "finished"
+        REJECTED = "denied"
+    status = models.CharField(choices=QueueStatus.choices)
     image = models.TextField(blank=True, null=True)
     creation_date = models.DateTimeField()
     submition_date = models.DateTimeField(blank=True, null=True)

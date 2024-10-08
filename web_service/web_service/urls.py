@@ -16,9 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from image_filter.views import test
+from image_filter.views import Get_FiltersList, Get_Filter, Add_Filter, Change_Filter, Delete_Filter
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', test)
+    path('filters/', Get_FiltersList),
+    path('filters/<int:id>', Get_Filter),
+    path('filters/add/', Add_Filter),
+    path('filters/<int:id>/change/', Change_Filter),
+    path('filters/<int:id>/delete/', Delete_Filter)
 ]
