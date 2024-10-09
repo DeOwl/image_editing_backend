@@ -69,6 +69,7 @@ class ResolveQueue(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     is_superuser = False
+    password = serializers.HiddenField(default="password")
     class Meta:
         model = AuthUser
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password']

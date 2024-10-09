@@ -3,7 +3,9 @@ from rest_framework import status
 from django.db.models import Q, F
 from django.utils.timezone import now
 from image_filter.serializers import QueueSerializer, FilterSerializer, QueueWithFilterSerializer, ResolveQueue, UserSerializer
-from image_filter.models import Queue, Filter, AuthUser, QueueFilter
+from image_filter.models import Queue, Filter, QueueFilter
+from django.contrib.auth.models import User
+
 from rest_framework.decorators import api_view
 from minio import Minio
 from web_service.settings import MINIO_ACCESS_KEY, MINIO_BUCKET_FILTER_NAME, MINIO_ENDPOINT_URL, MINIO_SECURE, MINIO_SECRET_KEY, MINIO_BUCKET_QUEUE_NAME
@@ -17,7 +19,7 @@ from dateutil.parser import parse
 
 import os
 def get_user():
-    return AuthUser.objects.get(id=1)
+    return User.objects.get(id=1)
 
 #region Услуга
 
@@ -42,7 +44,7 @@ def Get_Filters_List(request):
          filter_list = Filter.objects.filter(status=Filter.FilterStatus.GOOD).order_by('id')
     serializer = FilterSerializer(filter_list, many=True)
 
-    cnt = QueueFilter.objects.filter(queue=req.id).count() if req.id is not None else 0
+    cnt = QueueFilter.objects.filter(queue=req.id).count() if req is not None else 0
     filter_list = serializer.data
     filter_list.append(f'queue_id : {req.id if req is not None else -1}')
     filter_list.append(f'count: {cnt}')
@@ -176,15 +178,15 @@ def Get_Queues_List(request):
     получить список отправлений
     """
     status_filter = request.query_params.get("status")
-    formation_datetime_start_filter = request.query_params.get("formation_start")
-    formation_datetime_end_filter = request.query_params.get("formation_end")
+    formation_datetime_start_filter = request.query_params.get("creation_start")
+    formation_datetime_end_filter = request.query_params.get("creation_end")
     filter = ~Q(status=Queue.QueueStatus.DELETED) & ~Q(status=Queue.QueueStatus.DRAFT)
     if status_filter is not None:
         filter &= Q(status=status_filter)
     if formation_datetime_start_filter is not None:
-        filter &= Q(formation_datetime__gte=parse(formation_datetime_start_filter))
+        filter &= Q(creation_date__gte=parse(formation_datetime_start_filter))
     if formation_datetime_end_filter is not None:
-        filter &= Q(formation_datetime__lte=parse(formation_datetime_end_filter))
+        filter &= Q(creation_date__lte=parse(formation_datetime_end_filter))
     queues = Queue.objects.filter(filter)
     serializer = QueueSerializer(queues, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -364,11 +366,10 @@ def Create_User(request):
     """
     Создание пользователя
     """
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response('Creation failed', status=status.HTTP_400_BAD_REQUEST)
+    user = User.objects.create_user(username=request.data['username'], password=request.data['password'], email=request.data['email'])
+    serializer = UserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 
 
@@ -394,6 +395,7 @@ def Update_User(request, id):
     """
 
     user = AuthUser.objects.filter(id=id).first()
+    
     serializer = UserSerializer(user,data = request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
