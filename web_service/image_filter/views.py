@@ -394,7 +394,7 @@ def Update_User(request, id):
     Обновление данных пользователя
     """
 
-    user = AuthUser.objects.filter(id=id).first()
+    user = User.objects.filter(id=id).first()
     
     serializer = UserSerializer(user,data = request.data, partial=True)
     if serializer.is_valid():

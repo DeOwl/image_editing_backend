@@ -9,11 +9,6 @@ class FilterSerializer(serializers.ModelSerializer):
         # Поля, которые мы сериализуем
         fields = ['id','title', 'matrix_values' , 'description', 'status', 'image']
         read_only_fields = ['id']
-        
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AuthUser
-        fields = ["username"]
 
 class QueueSerializer(serializers.ModelSerializer):
     creator = serializers.SlugRelatedField(read_only=True, slug_field="username")
@@ -69,8 +64,7 @@ class ResolveQueue(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     is_superuser = False
-    password = serializers.HiddenField(default="password")
     class Meta:
         model = AuthUser
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
         read_only_fields = ['id']

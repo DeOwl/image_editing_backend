@@ -45,6 +45,6 @@ urlpatterns = [
     path('user/create', Create_User), 
     path('user/logout', Logout_User), 
     path('user/login', Login_User), 
-    path('user/<int:pk>/update', Update_User),
+    path('user/<int:id>/update', Update_User),
     
 ]
