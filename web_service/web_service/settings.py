@@ -129,3 +129,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MINIO_ENDPOINT_URL = '127.0.0.1:9000'
+MINIO_ACCESS_KEY = 'minioadmin'
+MINIO_SECRET_KEY = 'miniopassword'
+MINIO_SECURE = False
+MINIO_BUCKET_FILTER_NAME = 'filter-images'
+MINIO_BUCKET_QUEUE_NAME = 'queue-images'

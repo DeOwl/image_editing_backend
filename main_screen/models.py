@@ -32,13 +32,38 @@ class Filter(models.Model):
 
 
 class Queue(models.Model):
-    status = models.CharField(choices=(("draft", "draft"), ("deleted", "deleted"), ("formed", "formed"), ("finished", "finished"), ("denied", "denied")))
-    image = models.TextField(blank=True, null=True)
+    class QueueStatus(models.TextChoices):
+        DRAFT = "draft"
+        DELETED = "deleted"
+        FORMED = "formed"
+        COMPLETED = "finished"
+        REJECTED = "denied"
+    status = models.CharField(choices=QueueStatus.choices)
+    image_in = models.TextField(blank=True, null=True)
+    image_out = models.TextField(blank=True, null=True)
     creation_date = models.DateTimeField()
     submition_date = models.DateTimeField(blank=True, null=True)
     completion_date = models.DateTimeField(blank=True, null=True)
     creator = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='creator')
     moderator = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='moderator', related_name='queue_moderator_set', blank=True, null=True)
+    
+    def temp_image_in(self):
+        storage = Minio(endpoint=MINIO_ENDPOINT_URL,access_key=MINIO_ACCESS_KEY,secret_key=MINIO_SECRET_KEY,secure=MINIO_SECURE)
+        file = self.image_in
+        try:
+            url = storage.presigned_get_object(MINIO_BUCKET_QUEUE_NAME, file, timedelta(hours=2))
+        except Exception as exception:
+            return ""
+        return url
+        
+    def temp_image_out(self):
+        storage = Minio(endpoint=MINIO_ENDPOINT_URL,access_key=MINIO_ACCESS_KEY,secret_key=MINIO_SECRET_KEY,secure=MINIO_SECURE)
+        file = self.image_out
+        try:
+            url = storage.presigned_get_object(MINIO_BUCKET_QUEUE_NAME, file, timedelta(hours=2))
+        except Exception as exception:
+            return ""
+        return url
 
     class Meta:
         managed = False
