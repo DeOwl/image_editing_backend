@@ -32,7 +32,8 @@ class Filter(models.Model):
 
 class Queue(models.Model):
     status = models.CharField(choices=(("draft", "draft"), ("deleted", "deleted"), ("formed", "formed"), ("finished", "finished"), ("denied", "denied")))
-    image = models.TextField(blank=True, null=True)
+    image_in = models.TextField(blank=True, null=True)
+    image_out = models.TextField(blank=True, null=True)
     creation_date = models.DateTimeField()
     submition_date = models.DateTimeField(blank=True, null=True)
     completion_date = models.DateTimeField(blank=True, null=True)

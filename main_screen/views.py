@@ -43,18 +43,21 @@ def filter_page(request, id=0):
         filter_data = Filter.objects.get(id=id)
         return render(request, 'single_filter.html', { 'data': {
             'filter' : filter_data,
-            'favicon' : favicon
+            'favicon' : favicon,
+            'matrix' : filter_data.matrix_values,
         }})
     except Exception:
-        raise BadRequest('filter not found')
+        return redirect('main_page')
 
 def queue_page(request, id=0):
     try:
         queue = Queue.objects.get(id=id)
     except Exception:
-        raise BadRequest('queue not found')
+        return redirect('main_page')
     if (queue.creator.id != current_user):
-        raise PermissionDenied()
+        return redirect('main_page')
+    if (queue.status != "draft"):
+        return redirect('main_page')
 
     filter_data = QueueFilter.objects.select_related("filter").filter(queue=queue).order_by("order")
     
@@ -83,13 +86,13 @@ def add_filter(request, id=0):
             count = QueueFilter.objects.filter(queue=queue).count()
         except Exception as ex:
             count = 0
-            queue = Queue(status="draft", image='', creation_date = datetime.datetime.now(), creator = AuthUser.objects.get(id=current_user))
+            queue = Queue(status="draft", image_in='', creation_date = datetime.datetime.now(), creator = AuthUser.objects.get(id=current_user))
             queue.save()
         QueueFilter.objects.create(queue=queue, filter=Filter.objects.get(id=filter_id), order=count + 1)
 
         return redirect('main_page')
     else:
-        raise BadRequest('incorrect method')
+        return redirect('main_page')
     
 @csrf_exempt
 def remove_queue(request, id=0):
@@ -99,4 +102,4 @@ def remove_queue(request, id=0):
             cursor.execute("UPDATE queue SET status = 'deleted' WHERE id = %s", [queue_id])
         return redirect('main_page')
     else:
-        raise BadRequest('incorrect method')
+        return redirect('main_page')

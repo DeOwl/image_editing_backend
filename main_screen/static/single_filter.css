@@ -24,3 +24,17 @@
     padding-left: 20px;
     padding-right: 20px;
 }
+
+.matrix_filter {
+    display: inline-grid;
+    grid-template-columns: fit-content(100px) fit-content(100px) fit-content(100px);   
+    border: 1px solid black;
+    grid-gap: 1px;
+    background-color: black;
+  }
+  
+  .matrix_filter > div {
+    background-color: white;
+    padding: 15px;
+    text-align: center;
+  }

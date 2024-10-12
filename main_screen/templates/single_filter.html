@@ -12,6 +12,15 @@
     <div class="filter-contents">
         <p class="title">{{data.filter.title}}</p>
         <p class="short-description">{{data.filter.description}}</p>
+        <p class="short-description">Матрица:</P>
+        <div class="matrix_filter">
+            {% for m_value in data.filter.matrix_values %}
+            <div style="border:1px solid black">
+                {{m_value}}
+            </div>
+            {%endfor%}
+        </div>
     </div>
+    
  </div>   
 {% endblock %}
