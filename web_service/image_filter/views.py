@@ -2,8 +2,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q, F
 from django.utils.timezone import now
-from image_filter.serializers import QueueSerializer, FilterSerializer, QueueWithFilterSerializer, ResolveQueue, UserSerializer
-from image_filter.models import Queue, Filter, QueueFilter
+from image_filter.serializers import QueueSerializer, OneFilterSerializer, AllFiltersSerializer, QueueWithFilterSerializer, ResolveQueue, UserSerializer
+from image_filter.models import Queue, Filter, QueueFilter, AuthUser
 from django.contrib.auth.models import User
 
 from rest_framework.decorators import api_view
@@ -19,7 +19,7 @@ from dateutil.parser import parse
 
 import os
 def get_user():
-    return User.objects.get(id=1)
+    return AuthUser.objects.get(id=1)
 
 #region Услуга
 
@@ -42,7 +42,7 @@ def Get_Filters_List(request):
         filter_list = Filter.objects.filter(filters, status=Filter.FilterStatus.GOOD).order_by('id')
     else:
          filter_list = Filter.objects.filter(status=Filter.FilterStatus.GOOD).order_by('id')
-    serializer = FilterSerializer(filter_list, many=True)
+    serializer = AllFiltersSerializer(filter_list, many=True)
 
     cnt = QueueFilter.objects.filter(queue=req.id).count() if req is not None else 0
     filter_list = serializer.data
@@ -63,7 +63,7 @@ def Get_Filter(request, id):
     filter = Filter.objects.filter(id=id, status=Filter.FilterStatus.GOOD).first()
     if (filter is None):
         return Response("No such filter", status=status.HTTP_404_NOT_FOUND)
-    return Response(FilterSerializer(filter).data, status=status.HTTP_200_OK)
+    return Response(OneFilterSerializer(filter).data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def Add_Filter(request):
@@ -73,7 +73,7 @@ def Add_Filter(request):
     serilizer = FilterSerializer(data=request.data)
     if serilizer.is_valid():
         filter = serilizer.save()
-        serilizer = FilterSerializer(filter)
+        serilizer = OneFilterSerializer(filter)
         return Response(serilizer.data, status=status.HTTP_200_OK)
     print(serilizer.errors)
     return Response('Failed to add filter', status=status.HTTP_400_BAD_REQUEST)
@@ -86,7 +86,7 @@ def Change_Filter(request, id):
     filter = Filter.objects.filter(id=id).first()
     if filter is None:
         return Response('No such filter', status=status.HTTP_404_NOT_FOUND)
-    serializer = FilterSerializer(filter,data=request.data,partial=True)
+    serializer = OneFilterSerializer(filter,data=request.data,partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)

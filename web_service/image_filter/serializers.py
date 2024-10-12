@@ -2,12 +2,21 @@ from image_filter.models import AuthUser, Queue, Filter, QueueFilter
 from rest_framework import serializers
 
 
-class FilterSerializer(serializers.ModelSerializer):
+class AllFiltersSerializer(serializers.ModelSerializer):
     class Meta:
         # Модель, которую мы сериализуем
         model = Filter
         # Поля, которые мы сериализуем
-        fields = ['id','title', 'matrix_values' , 'description', 'status', 'image']
+        fields = ['id','title' , 'description', 'image']
+        read_only_fields = ['id']
+
+
+class OneFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        # Модель, которую мы сериализуем
+        model = Filter
+        # Поля, которые мы сериализуем
+        fields = ['id','title', 'matrix_values' , 'description', 'image', 'status']
         read_only_fields = ['id']
 
 class QueueSerializer(serializers.ModelSerializer):
@@ -17,7 +26,6 @@ class QueueSerializer(serializers.ModelSerializer):
         model = Queue
         fields = "__all__"
         read_only_fields = ['id', 'creator', 'image_in', 'creation_date']
-        # read_only_fields = ['status']
 
 
 class FilterListSerializer(serializers.ModelSerializer):
@@ -28,7 +36,6 @@ class FilterListSerializer(serializers.ModelSerializer):
             "title": obj.filter.title,
             "description" : obj.filter.description,
             "image" : obj.filter.image,
-            "matrix_values": obj.filter.matrix_values
         }
       class Meta:
             model = QueueFilter
@@ -63,7 +70,6 @@ class ResolveQueue(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    is_superuser = False
     class Meta:
         model = AuthUser
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
