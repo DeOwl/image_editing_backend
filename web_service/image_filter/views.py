@@ -41,7 +41,7 @@ from .auth import Auth_by_Session, AuthIfPos
                                            in_=openapi.IN_QUERY),
                      ],
                      responses={
-                         status.HTTP_200_OK: AllFiltersSerializer(many=True),
+                         status.HTTP_200_OK: AllFiltersSerializer(),
                          status.HTTP_403_FORBIDDEN: "Forbidden",
                      })
 
