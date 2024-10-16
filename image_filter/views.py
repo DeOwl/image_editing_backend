@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import BadRequest
 from django.core.exceptions import PermissionDenied
 import requests
-from .models import Filter, Queue, QueueFilter, AuthUser
+from .models import Filter, Queue, QueueFilter, CustomUser
 import datetime
 from django.db import connection
 
@@ -62,13 +62,7 @@ def queue_page(request, id=0):
     filter_data = QueueFilter.objects.select_related("filter").filter(queue=queue).order_by("order")
     
     # check if queue image exists
-    try:
-        image = Queue.objects.get(id=queue_id).image
-        response = requests.get(image)
-        if (response.status_code != 200):
-            image = ""
-    except Exception:
-        image = ''
+    image = Queue.objects.get(id=id).image_in
 
     return render(request, 'queue.html', { 'data': {
         'filters' : filter_data,
@@ -86,7 +80,7 @@ def add_filter(request, id=0):
             count = QueueFilter.objects.filter(queue=queue).count()
         except Exception as ex:
             count = 0
-            queue = Queue(status="draft", image_in='', creation_date = datetime.datetime.now(), creator = AuthUser.objects.get(id=current_user))
+            queue = Queue(status="draft", image_in='', creation_date = datetime.datetime.now(), creator = CustomUser.objects.get(id=current_user))
             queue.save()
         QueueFilter.objects.create(queue=queue, filter=Filter.objects.get(id=filter_id), order=count + 1)
 

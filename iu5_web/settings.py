@@ -29,9 +29,10 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
+AUTH_USER_MODEL = "image_filter.CustomUser"
 
 INSTALLED_APPS = [
-    'main_screen',
+    'image_filter',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,7 +56,7 @@ ROOT_URLCONF = 'iu5_web.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "main_screen/templates"],
+        'DIRS': [BASE_DIR / "image_filter/templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,7 +78,7 @@ WSGI_APPLICATION = 'iu5_web.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'pictura', # Имя вашей БД. Если вы создали черезе psql или IDE свою базу и хотите использовать его - пропишите его имя здесь
+        'NAME': 'pictura_', # Имя вашей БД. Если вы создали черезе psql или IDE свою базу и хотите использовать его - пропишите его имя здесь
         'USER': 'student',
         'PASSWORD': 'root',
         'HOST': 'localhost',
@@ -120,10 +121,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/main_screen/static/'
+STATIC_URL = '/image_filter/static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "main_screen/static/",
+    BASE_DIR / "image_filter/static/",
 ]
 
 # Default primary key field type

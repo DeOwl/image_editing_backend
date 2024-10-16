@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class MainScreenConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'main_screen'
+    name = 'image_filter'
