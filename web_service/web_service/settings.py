@@ -28,7 +28,21 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
+
+
 # Application definition
+
+AUTH_USER_MODEL = "image_filter.CustomUser" 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ]
+}
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -37,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'rest_framework',
 
     # Наше приложение
@@ -80,7 +95,7 @@ WSGI_APPLICATION = 'web_service.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'pictura', # Имя вашей БД. Если вы создали черезе psql или IDE свою базу и хотите использовать его - пропишите его имя здесь
+        'NAME': 'pictura_', # Имя вашей БД. Если вы создали черезе psql или IDE свою базу и хотите использовать его - пропишите его имя здесь
         'USER': 'student',
         'PASSWORD': 'root',
         'HOST': 'localhost',
@@ -136,3 +151,6 @@ MINIO_SECRET_KEY = 'miniopassword'
 MINIO_SECURE = False
 MINIO_BUCKET_FILTER_NAME = 'filter-images'
 MINIO_BUCKET_QUEUE_NAME = 'queue-images'
+
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379

@@ -1,5 +1,6 @@
-from image_filter.models import AuthUser, Queue, Filter, QueueFilter
+from image_filter.models import CustomUser, Queue, Filter, QueueFilter
 from rest_framework import serializers
+
 
 
 class AllFiltersSerializer(serializers.ModelSerializer):
@@ -20,8 +21,8 @@ class OneFilterSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class QueueSerializer(serializers.ModelSerializer):
-    creator = serializers.SlugRelatedField(read_only=True, slug_field="username")
-    moderator = serializers.SlugRelatedField(read_only=True, slug_field="username")
+    creator = serializers.SlugRelatedField(read_only=True, slug_field="email")
+    moderator = serializers.SlugRelatedField(read_only=True, slug_field="email")
     class Meta:
         model = Queue
         fields = "__all__"
@@ -46,6 +47,8 @@ class QueueWithFilterSerializer(serializers.ModelSerializer):
         filter_list = serializers.SerializerMethodField()
         temp_image_in = serializers.ReadOnlyField()
         temp_image_out = serializers.ReadOnlyField()
+        creator = serializers.SlugRelatedField(read_only=True, slug_field="email")
+        moderator = serializers.SlugRelatedField(read_only=True, slug_field="email")
 
         def get_filter_list(self, obj):
             filter_list = FilterListSerializer(obj.queues, many=True).data
@@ -63,6 +66,7 @@ class QueueWithFilterSerializer(serializers.ModelSerializer):
             
             
 class ResolveQueue(serializers.ModelSerializer):
+    status = serializers.ChoiceField(choices=(("formed", "formed"), ("finished", "finished")))
     class Meta:
         model = Queue
         fields = ['status']
@@ -70,7 +74,9 @@ class ResolveQueue(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    is_staff = serializers.BooleanField(default=False, required=False)
+    is_superuser = serializers.BooleanField(default=False, required=False)
     class Meta:
-        model = AuthUser
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
-        read_only_fields = ['id']
+        model = CustomUser
+        fields = ['email', 'password', 'is_staff', 'is_superuser']
+        read_only_fields = ['is_staff', 'is_superuser']

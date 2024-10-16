@@ -4,24 +4,36 @@ from web_service.settings import MINIO_ACCESS_KEY, MINIO_BUCKET_QUEUE_NAME, MINI
 from minio import Minio
 from datetime import timedelta
 from django.utils.timezone import now
-
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import PermissionsMixin, BaseUserManager
 # Create your models here.
 
-class AuthUser(models.Model):
-    password = models.CharField(max_length=128)
-    last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.BooleanField(default=False)
-    username = models.CharField(unique=True, max_length=150)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    email = models.CharField(max_length=254)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(default=now())
+class NewUserManager(BaseUserManager):
+    def create_user(self,email,password=None, **extra_fields):
+        if not email:
+            raise ValueError('User must have an email address')
+        
+        email = self.normalize_email(email) 
+        user = self.model(email=email, **extra_fields) 
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    def create_superuser(self,email,password=None, **extra_fields):
+        user = self.create_user(email, password=password, **extra_fields)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
 
-    class Meta:
-        managed = False
-        db_table = 'auth_user'
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(("email адрес"), unique=True)
+    password = models.CharField(max_length=255, verbose_name="Пароль")    
+    is_staff = models.BooleanField(default=False, verbose_name="Является ли пользователь менеджером?")
+    is_superuser = models.BooleanField(default=False, verbose_name="Является ли пользователь админом?")
+
+    USERNAME_FIELD = 'email'
+
+    objects =  NewUserManager()
 
 
 class Filter(models.Model):
@@ -52,8 +64,8 @@ class Queue(models.Model):
     creation_date = models.DateTimeField()
     submition_date = models.DateTimeField(blank=True, null=True)
     completion_date = models.DateTimeField(blank=True, null=True)
-    creator = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='creator')
-    moderator = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='moderator', related_name='queue_moderator_set', blank=True, null=True)
+    creator = models.ForeignKey(CustomUser, models.DO_NOTHING, db_column='creator')
+    moderator = models.ForeignKey(CustomUser, models.DO_NOTHING, db_column='moderator', related_name='queue_moderator_set', blank=True, null=True)
     
     def temp_image_in(self):
         storage = Minio(endpoint=MINIO_ENDPOINT_URL,access_key=MINIO_ACCESS_KEY,secret_key=MINIO_SECRET_KEY,secure=MINIO_SECURE)
