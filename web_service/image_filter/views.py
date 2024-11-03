@@ -537,28 +537,28 @@ def Delete_Filter_From_Queue(request, id_queue, order):
 @api_view(['PUT'])
 @permission_classes([IsAuth])
 @authentication_classes([Auth_by_Session])
-def Switch_Order(request, queue, ord):
+def Switch_Order(request, id_queue, order):
     """
     Изменение данных о грузе в отправлении
     """
     
-    filter_1 = QueueFilter.objects.filter(queue=queue, order=ord).first()
-    filter_2 = QueueFilter.objects.filter(queue=queue, order=ord + 1).first()
+    filter_1 = QueueFilter.objects.filter(queue=id_queue, order=order).first()
+    filter_2 = QueueFilter.objects.filter(queue=id_queue, order=order + 1).first()
     if filter_1 is None:
         return Response("filters in queue not found", status=status.HTTP_404_NOT_FOUND)
     if filter_2 is None:
         return Response("Cannot change order of last filter", status=status.HTTP_400_BAD_REQUEST)
-    if Queue.objects.filter(id=queue).first().creator != request.user:
+    if Queue.objects.filter(id=id_queue).first().creator != request.user:
         return Response(status=status.HTTP_403_FORBIDDEN)
-    if Queue.objects.filter(id=queue).first().status != Queue.QueueStatus.DRAFT:
+    if Queue.objects.filter(id=id_queue).first().status != Queue.QueueStatus.DRAFT:
         return Response("NOT ALLOWED", status=status.HTTP_400_BAD_REQUEST)
-    if Queue.objects.filter(id=queue).first().status != Queue.QueueStatus.DRAFT:
+    if Queue.objects.filter(id=id_queue).first().status != Queue.QueueStatus.DRAFT:
         return Response("NOT ALLOWED", status=status.HTTP_400_BAD_REQUEST)
     filter_1.order = -1
     filter_1.save()
-    filter_2.order = ord
+    filter_2.order = order
     filter_2.save()
-    filter_1.order = ord + 1
+    filter_1.order = order + 1
     filter_1.save()
     return Response("Succesfull", status=status.HTTP_200_OK)
 #endregion

@@ -59,7 +59,7 @@ urlpatterns = [
     path('queue/<int:id>/delete', Delete_Queue),
     
     path('queue-filters/delete/<int:id_queue>/<int:order>', Delete_Filter_From_Queue),
-    path('queue-filters/switch/<int:queue>/<int:ord>', Switch_Order),
+    path('queue-filters/switch/<int:id_queue>/<int:order>', Switch_Order),
     
     path('user/login',  Login_User, name='login'),
     path('user/logout', logout_user, name='logout'),
