@@ -45,6 +45,8 @@ REST_FRAMEWORK = {
 }
 
 INSTALLED_APPS = [
+        # Наше приложение
+    'image_filter',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,9 +55,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'drf_yasg',
     'rest_framework',
-
-    # Наше приложение
-    'image_filter',
 ]
 
 MIDDLEWARE = [

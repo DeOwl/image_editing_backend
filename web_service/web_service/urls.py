@@ -43,13 +43,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     
-    path('filters', Get_Filters_List),
-    path('filters/<int:id>', Get_Filter),
-    path('filters/add', Add_Filter),
-    path('filters/<int:id>/change', Change_Filter),
-    path('filters/<int:id>/delete', Delete_Filter),
-    path('filters/<int:id>/add', Add_Filter_Queue),
-    path('filters/<int:id>/load', Load_Filter_Image),
+    path('filters', Get_Filters_List), #список всех фильтров
+    path('filters/<int:id>', Get_Filter), #один фильтр
+    path('filters/add', Add_Filter), #Добавление фильтра
+    path('filters/<int:id>/change', Change_Filter), #Измнение фильтра по id
+    path('filters/<int:id>/delete', Delete_Filter),#Удаление фильтра по id
+    path('filters/<int:id>/add_to_queue', Add_Filter_Queue), #Удаление фильтра к очереди / создание очереди
+    path('filters/<int:id>/load', Load_Filter_Image), #Добавление изображения к фильтру по id
     
     path('queue', Get_Queues_List),
     path('queue/<int:id>', Get_Queue),

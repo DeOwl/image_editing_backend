@@ -33,6 +33,14 @@ import uuid
 from .auth import Auth_by_Session, AuthIfPos
 
 #region Услуга
+
+from rest_framework import serializers
+
+class AllFiltersWithQueue(serializers.Serializer):
+    filters = AllFiltersSerializer()
+    queue_id = serializers.IntegerField()
+    count = serializers.IntegerField()
+
 @swagger_auto_schema(method='get',
                      manual_parameters=[
                          openapi.Parameter('title',
@@ -41,7 +49,7 @@ from .auth import Auth_by_Session, AuthIfPos
                                            in_=openapi.IN_QUERY),
                      ],
                      responses={
-                         status.HTTP_200_OK: AllFiltersSerializer(),
+                         status.HTTP_200_OK: AllFiltersWithQueue(),
                          status.HTTP_403_FORBIDDEN: "Forbidden",
                      })
 
@@ -76,13 +84,8 @@ def Get_Filters_List(request):
          filter_list = Filter.objects.filter(status=Filter.FilterStatus.GOOD).order_by('id')
     serializer = AllFiltersSerializer(filter_list, many=True)
     
-    
-    filter_list = serializer.data
-    filter_list.append(f'queue_id : {req.id if req is not None else -1}')
-    filter_list.append(f'count: {filter_in_queue}')
-    
     return Response(
-        filter_list,
+        {'filters': serializer.data, 'queue_id' : req.id if req is not None else -1, 'count': filter_in_queue},
 
         status=status.HTTP_200_OK
     )
@@ -286,6 +289,7 @@ def Get_Queues_List(request):
     formation_datetime_start_filter = request.query_params.get("creation_start")
     formation_datetime_end_filter = request.query_params.get("creation_end")
     filter = ~Q(status=Queue.QueueStatus.DELETED)
+    filter = ~Q(status=Queue.QueueStatus.DRAFT)
     if status_filter is not None:
         filter &= Q(status=status_filter)
     if formation_datetime_start_filter is not None:
@@ -297,6 +301,9 @@ def Get_Queues_List(request):
     queues = Queue.objects.filter(filter)
     serializer = QueueSerializer(queues, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
 
 
 @swagger_auto_schema(method='get',
@@ -444,6 +451,8 @@ def Resolve_Queue(request, id):
     if queue is None:
         return Response("This queue does not exist", status=status.HTTP_404_NOT_FOUND)
     if queue.status != Queue.QueueStatus.FORMED:
+        return Response("This queue cannot be resolved", status=status.HTTP_400_BAD_REQUEST)
+    if queue.image_in is None or queue.image_in == "":
         return Response("This queue cannot be resolved", status=status.HTTP_400_BAD_REQUEST)
     serializer = ResolveQueue(queue,data=request.data,partial=True)
     if serializer.is_valid():
@@ -599,6 +608,7 @@ def Create_User(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @parser_classes((FormParser,))
+@csrf_exempt
 def Login_User(request):
     email = request.POST.get("email") # допустим передали username и password
     password = request.POST.get("password")
@@ -606,7 +616,7 @@ def Login_User(request):
     if user is not None:
         session_id = str(uuid.uuid4())
         session_storage.set(session_id, email)
-        response = Response(status=status.HTTP_201_CREATED)
+        response = Response(status=status.HTTP_200_OK)
         response.set_cookie("session_id", session_id, samesite="lax")
         return response
     return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
@@ -635,15 +645,20 @@ def logout_user(request):
 
 
 @swagger_auto_schema(method='put',
-                     request_body=UserSerializer,
+                        manual_parameters=[
+                            openapi.Parameter(name="password",
+                                            in_=openapi.IN_FORM,
+                                            type=openapi.TYPE_STRING,
+                                            required=True)
+                        ],
                      responses={
-                         status.HTTP_200_OK: UserSerializer(),
-                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                         status.HTTP_200_OK: "OK",
                          status.HTTP_403_FORBIDDEN: "Forbidden",
                      })
 @api_view(['PUT'])
 @permission_classes([IsAuth])
 @authentication_classes([Auth_by_Session])
+@parser_classes((FormParser,))
 def update_user(request, id):
     """
     Обновление данных пользователя
@@ -658,11 +673,6 @@ def update_user(request, id):
         pass
     else:
         return Response(status=status.HTTP_403_FORBIDDEN)
-
-    serializer = UserSerializer(request.user, data=request.data, partial=True)
-    print(request.user)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    request.user.set_password(request.query_params.get("password"))
+    return Response("OK", status=status.HTTP_200_OK)
 #endregion
