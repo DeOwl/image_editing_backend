@@ -1,3 +1,4 @@
+
 """
 URL configuration for web_service project.
 
@@ -21,16 +22,17 @@ from image_filter.views import Get_Queues_List, Get_Queue, Change_Queue_Image, F
 from image_filter.views import Create_User, Login_User, Logout_User, Update_User
 from image_filter.views import Delete_Filter_From_Queue, Switch_Order
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    path('filters', Get_Filters_List),
-    path('filters/<int:id>', Get_Filter),
-    path('filters/add', Add_Filter),
-    path('filters/<int:id>/change', Change_Filter),
-    path('filters/<int:id>/delete', Delete_Filter),
-    path('filters/<int:id>/add', Add_Filter_Queue),
-    path('filters/<int:id>/load', Load_Filter_Image),
+    path('filters', Get_Filters_List), #список всех фильтров
+    path('filters/<int:id>', Get_Filter), #один фильтр
+    path('filters/add', Add_Filter), #Добавление фильтра
+    path('filters/<int:id>/change', Change_Filter), #Измнение фильтра по id
+    path('filters/<int:id>/delete', Delete_Filter),#Удаление фильтра по id
+    path('filters/<int:id>/add_to_queue', Add_Filter_Queue), #Удаление фильтра к очереди / создание очереди
+    path('filters/<int:id>/load', Load_Filter_Image), #Добавление изображения к фильтру по id
     
     path('queue', Get_Queues_List),
     path('queue/<int:id>', Get_Queue),
@@ -40,11 +42,11 @@ urlpatterns = [
     path('queue/<int:id>/delete', Delete_Queue),
     
     path('queue-filters/delete/<int:id_queue>/<int:order>', Delete_Filter_From_Queue),
-    path('queue-filters/switch/<int:queue>/<int:ord_1>/<int:ord_2>', Switch_Order),
+    path('queue-filters/switch/<int:id_queue>/<int:order>', Switch_Order),
     
-    path('user/create', Create_User), 
-    path('user/logout', Logout_User), 
-    path('user/login', Login_User), 
-    path('user/<int:id>/update', Update_User),
+    path('user/login',  Login_User, name='login'),
+    path('user/logout', Logout_User, name='logout'),
+    path('user/register', Create_User, name='register'),
+    path('user/update', Update_User, name='update'),
     
 ]

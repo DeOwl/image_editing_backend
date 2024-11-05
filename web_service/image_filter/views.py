@@ -3,8 +3,7 @@ from rest_framework import status
 from django.db.models import Q, F
 from django.utils.timezone import now
 from image_filter.serializers import QueueSerializer, OneFilterSerializer, AllFiltersSerializer, QueueWithFilterSerializer, ResolveQueue, UserSerializer
-from image_filter.models import Queue, Filter, QueueFilter, AuthUser
-from django.contrib.auth.models import User
+from image_filter.models import Queue, Filter, QueueFilter, CustomUser
 
 from rest_framework.decorators import api_view
 from minio import Minio
@@ -19,7 +18,9 @@ from dateutil.parser import parse
 
 import os
 def get_user():
-    return AuthUser.objects.get(id=1)
+    return CustomUser.objects.filter(is_staff=False).first()
+def get_moderator():
+    return CustomUser.objects.filter(is_staff=True).first()
 
 #region Услуга
 
@@ -34,8 +35,11 @@ def Get_Filters_List(request):
     if title_filter is not None:
         filters = Q(title__icontains=title_filter)
     
-    #Получение очереди draft данного пользователя
-    req = Queue.objects.filter(creator=get_user().id, status=Queue.QueueStatus.DRAFT).first()
+    #Получение очереди draft данного пользовател
+    req = Queue.objects.filter(creator=get_user().id,
+                                                status=Queue.QueueStatus.DRAFT).first()
+    if req is not None:
+        filter_in_queue = QueueFilter.objects.filter(queue=req.id).count() if req.id is not None else 0
 
     #получение фильтров
     if filters is not None:
@@ -43,21 +47,16 @@ def Get_Filters_List(request):
     else:
          filter_list = Filter.objects.filter(status=Filter.FilterStatus.GOOD).order_by('id')
     serializer = AllFiltersSerializer(filter_list, many=True)
-
-    cnt = QueueFilter.objects.filter(queue=req.id).count() if req is not None else 0
-    filter_list = serializer.data
-    filter_list.append(f'queue_id : {req.id if req is not None else -1}')
-    filter_list.append(f'count: {cnt}')
     
     return Response(
-        filter_list,
+        {'filters': serializer.data, 'queue_id' : req.id if req is not None else -1, 'count': filter_in_queue},
 
         status=status.HTTP_200_OK
     )
 
 @api_view(['GET'])
 def Get_Filter(request, id):
-    """
+    """ 
     получение одного фильтра
     """
     filter = Filter.objects.filter(id=id, status=Filter.FilterStatus.GOOD).first()
@@ -70,11 +69,11 @@ def Add_Filter(request):
     """
     добавить новую услугу
     """
-    serilizer = FilterSerializer(data=request.data)
+    serilizer = OneFilterSerializer(data=request.data)
     if serilizer.is_valid():
         filter = serilizer.save()
         serilizer = OneFilterSerializer(filter)
-        return Response(serilizer.data, status=status.HTTP_200_OK)
+        return Response(serilizer.data, status=status.HTTP_201_CREATED)
     print(serilizer.errors)
     return Response('Failed to add filter', status=status.HTTP_400_BAD_REQUEST)
 
@@ -89,7 +88,7 @@ def Change_Filter(request, id):
     serializer = OneFilterSerializer(filter,data=request.data,partial=True)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     else:
         return Response('Incorrect data', status=status.HTTP_400_BAD_REQUEST)
 
@@ -112,7 +111,7 @@ def Delete_Filter(request, id):
         filter.image = ""
     filter.status = Filter.FilterStatus.DELETED
     filter.save()
-    return Response('Succesfully removed the filter', status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['POST'])
 def Add_Filter_Queue(request, id):
@@ -135,7 +134,7 @@ def Add_Filter_Queue(request, id):
         order = last_queue_filter.order + 1
     filter_queue = QueueFilter(queue=queue, filter=filter, order=order)
     filter_queue.save()
-    return Response('Succesfully added filter to queue')
+    return Response('Succesfully added filter to queue', status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
 def Load_Filter_Image(request, id):
@@ -165,7 +164,7 @@ def Load_Filter_Image(request, id):
         return Response(f'Failed to load pic due to {exception}', status=status.HTTP_400_BAD_REQUEST)
     filter.image = f'http://{MINIO_ENDPOINT_URL}/{MINIO_BUCKET_FILTER_NAME}/{file_name}'
     filter.save()
-    return Response('Succesfully added/changed pic', status=status.HTTP_200_OK)
+    return Response('Succesfully added/changed pic', status=status.HTTP_201_CREATED)
 
 
 #endregion
@@ -175,12 +174,13 @@ def Load_Filter_Image(request, id):
 @api_view(['GET'])
 def Get_Queues_List(request):
     """
-    получить список отправлений
+    получить список очередей
     """
     status_filter = request.query_params.get("status")
     formation_datetime_start_filter = request.query_params.get("creation_start")
     formation_datetime_end_filter = request.query_params.get("creation_end")
-    filter = ~Q(status=Queue.QueueStatus.DELETED) & ~Q(status=Queue.QueueStatus.DRAFT)
+    filter = ~Q(status=Queue.QueueStatus.DELETED)
+    filter = ~Q(status=Queue.QueueStatus.DRAFT)
     if status_filter is not None:
         filter &= Q(status=status_filter)
     if formation_datetime_start_filter is not None:
@@ -195,7 +195,7 @@ def Get_Queues_List(request):
 @api_view(['GET'])
 def Get_Queue(request, id):
     """
-    получить отправление
+    получить очередь
     """
     filter = Q(id=id) & ~Q(status=Queue.QueueStatus.DELETED)
     queue = Queue.objects.filter(filter).first()
@@ -227,6 +227,8 @@ def Change_Queue_Image(request, id):
     
     storage = Minio(endpoint=MINIO_ENDPOINT_URL,access_key=MINIO_ACCESS_KEY,secret_key=MINIO_SECRET_KEY,secure=MINIO_SECURE)
     file = request.FILES.get("image")
+    if file is None:
+        return Response(f'No image provided', status=status.HTTP_400_BAD_REQUEST)
     file_name = f'{id}/{file.name}'
     try:
         storage.put_object(MINIO_BUCKET_QUEUE_NAME, file_name, file, file.size)
@@ -250,8 +252,6 @@ def Form_Queue(request, id):
 
     if queue.image_in is None or queue.image_in == "":
         return Response("No image selected", status=status.HTTP_400_BAD_REQUEST)
-
-
     
     queue.status = Queue.QueueStatus.FORMED
     queue.submition_date = now()
@@ -290,13 +290,15 @@ def Resolve_Queue(request, id):
         return Response("This queue does not exist", status=status.HTTP_404_NOT_FOUND)
     if queue.status != Queue.QueueStatus.FORMED:
         return Response("This queue cannot be resolved", status=status.HTTP_400_BAD_REQUEST)
+    if queue.image_in is None or queue.image_in == "":
+        return Response("This queue cannot be resolved", status=status.HTTP_400_BAD_REQUEST)
     serializer = ResolveQueue(queue,data=request.data,partial=True)
     if serializer.is_valid():
 
         queue = Queue.objects.get(id=id)
         queue.image_out = Compute_Image(queue)
         queue.completion_date = now()
-        queue.moderator = get_user()
+        queue.moderator = get_moderator()
         serializer.save()
         queue.save()
         serializer = QueueSerializer(queue)
@@ -332,27 +334,38 @@ def Delete_Filter_From_Queue(request, id_queue, order):
     filter_in_queue = QueueFilter.objects.filter(queue=id_queue, order=order).first()
     if filter_in_queue is None:
         return Response("Queue not found", status=status.HTTP_404_NOT_FOUND)
+    if Queue.objects.filter(id=id_queue).first().status != Queue.QueueStatus.DRAFT:
+        return Response("NOT ALLOWED", status=status.HTTP_400_BAD_REQUEST)
     filter_in_queue.delete()
-    for FilterQueue in QueueFilter.objects.filter(queue=id_queue, order__gt=order):
+    for FilterQueue in QueueFilter.objects.filter(queue=id_queue, order__gt=order).order_by("order"):
         FilterQueue.order -= 1
         FilterQueue.save()
     return Response("deleted", status=status.HTTP_200_OK)
 
 
 @api_view(['PUT'])
-def Switch_Order(request, queue, ord_1, ord_2):
+def Switch_Order(request, id_queue, order):
     """
     Изменение данных о грузе в отправлении
     """
-    filter_1 = QueueFilter.objects.filter(queue=queue, order=ord_1).first()
-    filter_2 = QueueFilter.objects.filter(queue=queue, order=ord_2).first()
-    if filter_1 is None or filter_2 is None:
+    
+    filter_1 = QueueFilter.objects.filter(queue=id_queue, order=order).first()
+    filter_2 = QueueFilter.objects.filter(queue=id_queue, order=order + 1).first()
+    if filter_1 is None:
         return Response("filters in queue not found", status=status.HTTP_404_NOT_FOUND)
+    if filter_2 is None:
+        return Response("Cannot change order of last filter", status=status.HTTP_400_BAD_REQUEST)
+    if Queue.objects.filter(id=id_queue).first().creator != get_user():
+        return Response(status=status.HTTP_403_FORBIDDEN)
+    if Queue.objects.filter(id=id_queue).first().status != Queue.QueueStatus.DRAFT:
+        return Response("NOT ALLOWED", status=status.HTTP_400_BAD_REQUEST)
+    if Queue.objects.filter(id=id_queue).first().status != Queue.QueueStatus.DRAFT:
+        return Response("NOT ALLOWED", status=status.HTTP_400_BAD_REQUEST)
     filter_1.order = -1
     filter_1.save()
-    filter_2.order = ord_1
+    filter_2.order = order
     filter_2.save()
-    filter_1.order = ord_2
+    filter_1.order = order + 1
     filter_1.save()
     return Response("Succesfull", status=status.HTTP_200_OK)
 #endregion
@@ -366,9 +379,14 @@ def Create_User(request):
     """
     Создание пользователя
     """
-    user = User.objects.create_user(username=request.data['username'], password=request.data['password'], email=request.data['email'])
-    serializer = UserSerializer(user)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    if CustomUser.objects.filter(email=request.data['email']).exists():
+        return Response({'status': 'Exist'}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        CustomUser.objects.create_user(email=serializer.data['email'],
+                                    password=serializer.data['password'])
+        return Response({'status': 'Success'}, status=status.HTTP_200_OK)
+    return Response({'status': 'Error', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -393,14 +411,6 @@ def Update_User(request, id):
     """
     Обновление данных пользователя
     """
-
-    user = User.objects.filter(id=id).first()
-    
-    serializer = UserSerializer(user,data = request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    else:
-        return Response('Incorrect data', status=status.HTTP_400_BAD_REQUEST)
-
+    get_user().set_password(request.query_params.get("password"))
+    return Response("OK", status=status.HTTP_200_OK)
 #endregion
