@@ -56,7 +56,7 @@ class QueueWithFilterSerializer(serializers.ModelSerializer):
             read_only_fields = ["filter_list"]
             
 class ResolveQueue(serializers.ModelSerializer):
-    status = serializers.ChoiceField(choices=(("formed", "formed"), ("rejected", "rejected")))
+    status = serializers.ChoiceField(choices=(("finished", "finished"), ("rejected", "rejected")))
     class Meta:
         model = Queue
         fields = ['status']

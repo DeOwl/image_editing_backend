@@ -454,6 +454,7 @@ def Resolve_Queue(request, id):
         return Response("This queue cannot be resolved", status=status.HTTP_400_BAD_REQUEST)
     if queue.image_in is None or queue.image_in == "":
         return Response("This queue cannot be resolved", status=status.HTTP_400_BAD_REQUEST)
+    print(request.data)
     serializer = ResolveQueue(queue,data=request.data,partial=True)
     if serializer.is_valid():
 
