@@ -19,7 +19,6 @@
 - Python
 - Django
 - DRF
-- Docker
 - Minio
 - Redis
 - Postgres
